@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Storage CRUD</title>
+  <style>
+    /* Add some basic styling for clarity */
+    label, input, button {
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Add User</h2>
+  <form id="userForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" required>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" required>
+
+   
+
+    <label for="phoneNumber">Phone Number:</label>
+    <input type="tel" id="phoneNumber" required>
+
+    <button type="button" onclick="addUser()">Submit</button>
+  </form>
+
+  <h2>User List</h2>
+  <ul id="userList"></ul>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        axios.get("https://crudcrud.com/api/754ec80655e54cecbd7d3f662e79b9fa/sData")
+        .then((response)=> {
+            console.log(response)
+        })
+            .catch((error)=>{
+                console.log(error)
+          
+        })
+      displayUsersFromLocalStorage();
+    });
+
+    function addUser() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+     
+      const phoneNumber = document.getElementById('phoneNumber').value;
+
+      if (name && email &&  phoneNumber) {
+        const newUser = { name, email, phoneNumber };
+        let users = getUsersFromLocalStorage();
+        users.push(newUser);
+        saveUsersToLocalStorage(users);
+        displayUsersFromLocalStorage();
+        clearForm();
+      } else {
+        alert('Please fill in all fields.');
+      }
+    }
+
+    function displayUsersFromLocalStorage() {
+      const users = getUsersFromLocalStorage();
+      const userListElement = document.getElementById('userList');
+      userListElement.innerHTML = '';
+
+      users.forEach((user, index) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <strong>Name:</strong> ${user.name}<br>
+          <strong>Email:</strong> ${user.email}<br>
+        
+          <strong>Phone:</strong> ${user.phoneNumber}<br>
+          <button onclick="editUser(${index})">Edit</button>
+          <button onclick="deleteUser(${index})">Delete</button>
+        `;
+        userListElement.appendChild(listItem);
+      });
+    }
+
+    function editUser(index) {
+      let users = getUsersFromLocalStorage();
+      const editedUser = users[index];
+
+      // Populate the form with the selected user's data
+      document.getElementById('name').value = editedUser.name;
+      document.getElementById('email').value = editedUser.email;
+      
+      document.getElementById('phoneNumber').value = editedUser.phoneNumber;
+
+      // Remove the selected user from local storage
+      users.splice(index, 1);
+      saveUsersToLocalStorage(users);
+
+      // Update the displayed user list
+      displayUsersFromLocalStorage();
+    }
+
+    function deleteUser(index) {
+      let users = getUsersFromLocalStorage();
+      // Remove the selected user from local storage
+      users.splice(index, 1);
+      saveUsersToLocalStorage(users);
+
+      // Update the displayed user list
+      displayUsersFromLocalStorage();
+    }
+
+    function getUsersFromLocalStorage() {
+      return JSON.parse(localStorage.getItem('users')) || [];
+    }
+
+    function saveUsersToLocalStorage(users) {
+      localStorage.setItem('users', JSON.stringify(users));
+    }
+
+    function clearForm() {
+      document.getElementById('name').value = '';
+      document.getElementById('email').value = '';
+  
+      document.getElementById('phoneNumber').value = '';
+    }
+  </script>
+</body>
+</html>
